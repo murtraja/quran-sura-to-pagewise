@@ -1,0 +1,39 @@
+Husary long madd munfasil:
+https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree/
+Audio files
+
+https://android.quran.com/data/databases/audio/husary.zip
+Timing file (Surah wise)
+
+Husary short madd munfasil:
+Audio files: https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree_iza3a/128kbps (husary_128)
+
+DB: https://android.quran.com/data/databases/audio/husary_iza3a.zip
+
+
+Minshawi:
+Audio files: https://download.quranicaudio.com/quran/muhammad_siddeeq_al-minshaawee/
+(the DB matches the files listed in the above link, but then bismillah is not clear in 52-57 sura, so downloaded the fix also)
+
+DB: https://android.quran.com/data/databases/audio/minshawi_murattal.zip
+
+Algorithm:
+1. Given a page, list all ayahs on the page
+2. Initialize empty page audio
+3. For each ayah, get the audio segment by consulting the db and sura files.
+4. stitch 3 to 2, note down timings 
+5. write the final mp3 and the entries for this page.
+6. Repeat for all pages 
+7. separate bismillah from sura 1st ayat for 113 sura.
+
+select sura_number, max(min(ayah_number), 1) as start_ayah, max(ayah_number) as end_ayah, (max(ayah_number) = (select max(ayah_number) from shzaudio where sura_number=a.sura_number)) as last_ayah from shzaudio a where page_number=3 group by sura_number order by sura_number
+
+Managed to first detect the silences and using the midpoint of the silence, fixed the QA database husary_fast.db, table: timings_corrections
+
+using timings_corrections, managed to create page wise database out of it along with the corresponding page wise mp3
+
+without using the bitrate option for pydub, the files generated had ~ 2 MB size per page (husary_pagewise_128k)
+so used the bitrate='64k' option to reduce it to an average of ~ 1 MB per page (husary_pagewise)
+
+ffmpeg -i input.mp3 -codec:a libmp3lame -b:a 128k output.mp3
+this command could also have been used to downsample
